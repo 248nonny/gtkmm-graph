@@ -5,6 +5,12 @@
 #include "gtkmm/enums.h"
 #include <gtkmm/drawingarea.h>
 
+
+
+#ifndef GUI_SCALE
+#define GUI_SCALE 1
+#endif
+
 // max params for graphs.
 const short int MAX_MAIN_LINE_COUNT = 100;
 const short int MAX_SUB_LINE_COUNT = 100;
@@ -63,10 +69,10 @@ struct Grid {
     int height;
 
     // NOTE I just changed the types to float, errors may occur :P
-    float xstart = 0;
-    float xstop = 1;
-    float ystart = -40;
-    float ystop = 100;
+    double xstart = 0;
+    double xstop = 1;
+    double ystart = -40;
+    double ystop = 100;
 
     double main_x_lines[MAX_MAIN_LINE_COUNT]; // main lines determine tick marks, sub lines are for visuals only.
     int main_x_line_count = 0;
@@ -94,6 +100,8 @@ struct Grid {
     std::function<double(double)> trnfrm[2]; // first element is x trnfm, second is y.
 
     int fontsize = 12;
+
+    double current_scale = 1;
 
     float grid_line_rgba[4] = {0.7,0.7,0.7, 0.6};
 
@@ -130,6 +138,14 @@ public:
     int data_index;
     void write_data(GraphDataSet input_data, int data_slot = 0);
 
+    void update_gui_scale(double scale = 1);
+
+
+    void make_random_data(int data_slot = 0);
+    void make_sine_data(int data_slot = 0);
+    void make_log_data(int data_slot = 0);
+    void make_linear_data(int data_slot = 0);
+
 protected:
     void on_draw(const Cairo::RefPtr<Cairo::Context>& cr, int width, int height);
     void get_grid_lines();
@@ -143,10 +159,6 @@ protected:
     void plot_data(const Cairo::RefPtr<Cairo::Context>& cr);
 
 
-    void make_random_data(int data_slot = 0);
-    void make_sine_data(int data_slot = 0);
-    void make_log_data(int data_slot = 0);
-    void make_linear_data(int data_slot = 0);
 
     void sort_data_x(int data_slot);
 };

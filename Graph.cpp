@@ -15,6 +15,8 @@ Graph::Graph() {
     set_size_request(grid.pads[PAD_LEFT] + grid.pads[PAD_RIGHT], grid.pads[PAD_TOP] + grid.pads[PAD_BOTTOM]);
     set_draw_func(sigc::mem_fun(*this, &Graph::on_draw));
 
+    update_gui_scale(GUI_SCALE);
+
 }
 
 Graph::~Graph() {
@@ -321,10 +323,11 @@ void Graph::plot_data(const Cairo::RefPtr<Cairo::Context>& cr) {
             DLOG(INFO) << "data exists in this data set. finding first plottable point.";
             for (int j = 0; j < data[i].size(); j++) {
                 DLOG(INFO) << "moving to point " << j << ", which has values x:" << data[i][j][0] << ", y:" << data[i][j][1] << ".";
-                cr->move_to(grid.trnfrm[0](data[i][j][0]),grid.trnfrm[1](data[i][j][1]));
                 if (data[i][j][0] >= grid.xstart - range*0.01 && data[i][j][0] <= grid.xstop && data[i][j][1] >= grid.ystart && data[i][j][1] <= grid.ystop) {
+                    cr->move_to(grid.trnfrm[0](data[i][j - (j != 0)][0]),grid.trnfrm[1](data[i][j - (j != 0)][1]));
                     break;
-                } // what you should be doing is drawing a line to the edge of the graph and then break;-ing. find slope and stuff?
+                } 
+                // what you should be doing is drawing a line to the edge of the graph and then break;-ing. find slope and stuff?
             }     // also, this should probably happen in pre-processing; one array is the raw data, one is the data to plot, that way
                 // we don't have to recalculate the slope stuff every time.
             for (int j = 0; j < data[i].size(); j++) {
@@ -335,6 +338,7 @@ void Graph::plot_data(const Cairo::RefPtr<Cairo::Context>& cr) {
                 if (data[i][j][0] >= grid.xstart && data[i][j][0] <= grid.xstop && data[i][j][1] >= grid.ystart && data[i][j][1] <= grid.ystop) {
                     cr->line_to(x, y);
                 } else {
+                    cr->line_to(x, y);
                     break;
                 }
             }
@@ -390,6 +394,8 @@ void Graph::make_linear_data(int data_slot) {
     double d = grid.xstart - c;    
 
     for (int i = 0; i < data[data_slot].size(); i++) {
+        data[data_slot][i].resize(2);
+        // DLOG(INFO) << "amoggggg" << i;
         double &x = data[data_slot][i][0] = c * pow(10,i + 1) + d;
         data[data_slot][i][1] = a * x + b;
     }
@@ -460,3 +466,20 @@ void Graph::write_data(GraphDataSet input_data, int data_slot) {
 // void Graph::allocate_data(int size, bool set_to_zero, bool force_allocate) {
 //     allocate_GraphData(size, set_to_zero, data, force_allocate);
 // }
+
+
+void Graph::update_gui_scale(double scale) {
+
+    double factor = scale / grid.current_scale;
+
+    grid.fontsize = grid.fontsize * factor;
+    grid.text_offset = grid.text_offset * factor;
+
+    for (int i = 0; i < 4; i++) {
+        grid.pads[i] = grid.pads[i] * factor;
+    }
+
+    grid.data_line_width = grid.data_line_width * factor;
+
+    grid.current_scale = scale;
+}
