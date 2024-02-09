@@ -101,7 +101,7 @@ void Graph::get_grid_lines() {
 
         grid.main_x_line_count = ceil(logdiff);
         if (grid.main_x_line_count >= MAX_MAIN_LINE_COUNT) {
-            printf("Warning! max line count exceeded, memory issues may be encountered.");
+            // printf("Warning! max line count exceeded, memory issues may be encountered.");
         }
 
         for (int i = 0; i < grid.main_x_line_count; i++) {
@@ -315,7 +315,7 @@ void Graph::plot_data(const Cairo::RefPtr<Cairo::Context>& cr) {
         if (data[i].size() > 0) {
             cr->set_line_width(grid.data_line_width);
             int rgba_i = i % NUM_COLOURS;
-            printf("rgba_i: %d, r:%f, g:%f, b:%f, a:%f\n\n",rgba_i,grid.data_line_rgba[rgba_i][0],grid.data_line_rgba[rgba_i][1],grid.data_line_rgba[rgba_i][2],grid.data_line_opacity);
+            // printf("rgba_i: %d, r:%f, g:%f, b:%f, a:%f\n\n",rgba_i,grid.data_line_rgba[rgba_i][0],grid.data_line_rgba[rgba_i][1],grid.data_line_rgba[rgba_i][2],grid.data_line_opacity);
             
             cr->set_source_rgba(grid.data_line_rgba[rgba_i][0],grid.data_line_rgba[rgba_i][1],grid.data_line_rgba[rgba_i][2],grid.data_line_opacity);
 
