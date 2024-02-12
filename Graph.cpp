@@ -73,7 +73,7 @@ void Graph::find_trnfrm() {
     if (grid.x_type == AxisType::LOG) {
         a = (double)(grid.width - grid.pads[PAD_LEFT] - grid.pads[PAD_RIGHT]) / (log10(grid.xstop) - log10(grid.xstart));
         b = grid.pads[PAD_LEFT] - a * log10(grid.xstart);
-        grid.trnfrm[0] = [a,b](double xval) {return a * log10(xval) + b;};
+        grid.trnfrm[0] = [a,b](double xval) {return xval > 0 ? a * log10(xval) + b : b;};
     } else if (grid.x_type == AxisType::LINEAR) {
         a = (double)(grid.width - grid.pads[PAD_LEFT] - grid.pads[PAD_RIGHT]) / (grid.xstop - grid.xstart);
         b = grid.pads[PAD_LEFT] - a * grid.xstart;
@@ -93,6 +93,7 @@ void Graph::get_grid_lines() {
     grid.prev_height = grid.height;
     grid.prev_width = grid.width;
 
+    DLOG(INFO) << "getting grid lines...";
 
     if (grid.x_type == AxisType::LOG) {
 
@@ -161,8 +162,9 @@ void Graph::get_grid_lines() {
     } else if (grid.x_type == AxisType::LINEAR) {
         // printf("gigo\n");
         int xdiff = grid.xstop - grid.xstart;
+        printf("0");
         grid.main_x_line_count = floor((float)xdiff/(float)grid.main_x_line_increment);
-
+        printf("1");
         if (grid.main_x_line_count >= MAX_MAIN_LINE_COUNT) {
             printf("Warning! max line count exceeded, memory issues may be encountered.");
         }
@@ -172,7 +174,7 @@ void Graph::get_grid_lines() {
         }
 
         // main x lines
-        for (int i = 0; i < grid.main_x_line_count; i++) {
+        for (int i = 0; i < grid.main_x_line_count || i < 100; i++) {
             grid.main_x_lines[i] = grid.xstart + i * grid.main_x_line_increment;
         }
 
@@ -186,6 +188,8 @@ void Graph::get_grid_lines() {
                 break;
             }
         }
+
+        printf("2");
     }
 
     // now for the x labels
@@ -225,6 +229,8 @@ void Graph::get_grid_lines() {
             break;
         }
     }
+
+    DLOG(INFO) << "Lines gotten successfully.";
 }
 
 
@@ -338,8 +344,8 @@ void Graph::plot_data(const Cairo::RefPtr<Cairo::Context>& cr) {
                 if (data[i][j][0] >= grid.xstart && data[i][j][0] <= grid.xstop && data[i][j][1] >= grid.ystart && data[i][j][1] <= grid.ystop) {
                     cr->line_to(x, y);
                 } else {
-                    cr->line_to(x, y);
-                    break;
+                    // cr->line_to(x, y);
+                    // break;
                 }
             }
             cr->stroke();
