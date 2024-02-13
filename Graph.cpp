@@ -324,30 +324,38 @@ void Graph::plot_data(const Cairo::RefPtr<Cairo::Context>& cr) {
             // printf("rgba_i: %d, r:%f, g:%f, b:%f, a:%f\n\n",rgba_i,grid.data_line_rgba[rgba_i][0],grid.data_line_rgba[rgba_i][1],grid.data_line_rgba[rgba_i][2],grid.data_line_opacity);
             
             cr->set_source_rgba(grid.data_line_rgba[rgba_i][0],grid.data_line_rgba[rgba_i][1],grid.data_line_rgba[rgba_i][2],grid.data_line_opacity);
-
+            
             // cr->move_to(0, 0);
             DLOG(INFO) << "data exists in this data set. finding first plottable point.";
-            for (int j = 0; j < data[i].size(); j++) {
-                DLOG(INFO) << "moving to point " << j << ", which has values x:" << data[i][j][0] << ", y:" << data[i][j][1] << ".";
-                if (data[i][j][0] >= grid.xstart - range*0.01 && data[i][j][0] <= grid.xstop && data[i][j][1] >= grid.ystart && data[i][j][1] <= grid.ystop) {
-                    cr->move_to(grid.trnfrm[0](data[i][j - (j != 0)][0]),grid.trnfrm[1](data[i][j - (j != 0)][1]));
-                    break;
-                } 
-                // what you should be doing is drawing a line to the edge of the graph and then break;-ing. find slope and stuff?
-            }     // also, this should probably happen in pre-processing; one array is the raw data, one is the data to plot, that way
-                // we don't have to recalculate the slope stuff every time.
-            for (int j = 0; j < data[i].size(); j++) {
-                double x = grid.trnfrm[0](data[i][j][0]);
-                double y = grid.trnfrm[1](data[i][j][1]);
-                // DLOG(INFO) << "plotting point #" << j << " with values {" << data[i][j][0] << ", " << data[i][j][1] << "}.";
-                
-                if (data[i][j][0] >= grid.xstart && data[i][j][0] <= grid.xstop && data[i][j][1] >= grid.ystart && data[i][j][1] <= grid.ystop) {
-                    cr->line_to(x, y);
-                } else {
-                    // cr->line_to(x, y);
-                    // break;
-                }
+
+            double x0;
+            double y0;
+
+            if (data[i][0][0] <= grid.xstart) {
+                x0 = grid.trnfrm[0](grid.xstart);
+            } else if (data[i][0][0] >= grid.xstop) {
+                x0 = grid.trnfrm[0](grid.xstop);
+            } else {
+                x0 = grid.trnfrm[0](data[i][0][0]);
             }
+
+            if (data[i][0][1] <= grid.ystart) {
+                y0 = grid.trnfrm[1](grid.ystart);
+            } else if (data[i][0][1] >= grid.ystop) {
+                y0 = grid.trnfrm[1](grid.ystop);
+            } else {
+                y0 = grid.trnfrm[1](data[i][0][1]);
+            }
+
+            cr->move_to(x0, y0);
+
+            for (int j = 0; j < data[i].size(); j++) {
+                cr->line_to(
+                    grid.trnfrm[0]((data[i][j][0] >= grid.xstart && data[i][j][0] <= grid.xstop) ? data[i][j][0] : (data[i][j][0] >= grid.xstop) * grid.xstop + (data[i][j][0] < grid.xstop) * grid.xstart),
+                    grid.trnfrm[1]((data[i][j][1] >= grid.ystart && data[i][j][1] <= grid.ystop) ? data[i][j][1] : (data[i][j][1] >= grid.ystop) * grid.ystop + (data[i][j][1] < grid.ystop) * grid.ystart)
+                );
+            }
+            
             cr->stroke();
             
 
